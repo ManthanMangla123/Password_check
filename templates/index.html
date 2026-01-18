@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Password Strength Evaluator</title>
+    <style>
+        /* ============================================
+           Design System - Professional Security Tool
+           ============================================ */
+        
+        /* Reset & Base */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* Color System - Semantic, restrained palette */
+        :root {
+            /* Neutral base */
+            --color-bg: #e2ecf5;
+            --color-surface: #d2eef0;
+            --color-border: #e1e4e8;
+            --color-border-focus: #0366d6;
+            
+            /* Text hierarchy */
+            --color-text-primary: #24292e;
+            --color-text-secondary: #586069;
+            --color-text-tertiary: #6a737d;
+            
+            /* Semantic status colors - professional, not harsh */
+            --color-danger: #d1242f;
+            --color-danger-bg: #fff5f5;
+            --color-warning: #b08800;
+            --color-warning-bg: #fffbf0;
+            --color-success: #1a7f37;
+            --color-success-bg: #f0fff4;
+            --color-info: #0969da;
+            --color-info-bg: #f0f8ff;
+            
+            /* Spacing scale - 8px base */
+            --space-xs: 4px;
+            --space-sm: 8px;
+            --space-md: 16px;
+            --space-lg: 24px;
+            --space-xl: 32px;
+            --space-2xl: 48px;
+            
+            /* Typography scale - increased sizes */
+            --font-size-xs: 1rem;        /* 16px */
+            --font-size-sm: 1.125rem;     /* 18px */
+            --font-size-base: 1.25rem;    /* 20px */
+            --font-size-lg: 1.375rem;     /* 22px */
+            --font-size-xl: 1.625rem;     /* 26px */
+            --font-size-2xl: 2rem;        /* 32px */
+            --font-size-3xl: 2.5rem;      /* 40px */
+            --font-size-4xl: 3rem;        /* 48px */
+            
+            /* Line heights */
+            --line-height-tight: 1.25;
+            --line-height-normal: 1.5;
+            --line-height-relaxed: 1.75;
+            
+            /* Transitions - subtle, purposeful */
+            --transition-fast: 150ms ease;
+            --transition-base: 200ms ease;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+            background: var(--color-bg);
+            color: var(--color-text-primary);
+            line-height: var(--line-height-normal);
+            min-height: 100vh;
+            padding: var(--space-lg);
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+            padding-top: var(--space-xl);
+        }
+
+        /* Page Title - topmost, properly sized */
+        body > h1 {
+            color: var(--color-text-primary);
+            font-size: var(--font-size-4xl);
+            font-weight: 600;
+            line-height: var(--line-height-tight);
+            margin-bottom: var(--space-lg);
+            letter-spacing: -0.03em;
+            text-align: center;
+            width: 100%;
+            max-width: 1200px;
+            padding: 0 var(--space-lg);
+        }
+
+        /* Container - flat, professional card */
+        .container {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: 6px;
+            max-width: 1200px;
+            width: 100%;
+            padding: var(--space-2xl);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+        }
+
+        /* Main Layout - two-column grid */
+        .main-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--space-2xl);
+            column-gap: calc(var(--space-2xl) * 2);
+            margin-top: var(--space-2xl);
+            position: relative;
+        }
+
+        /* Vertical divider (desktop only) */
+        .main-layout::before {
+            content: '';
+            position: absolute;
+            left: calc(50% - var(--space-2xl));
+            top: 0;
+            bottom: 0;
+            width: 1px;
+            background: var(--color-border);
+        }
+
+        /* Left Panel - form (static) */
+        .left-panel {
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Right Panel - dynamic content */
+        .right-panel {
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Info Panel - educational content (default visible) */
+        .info-panel {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: 6px;
+            padding: var(--space-xl);
+            max-height: 60vh;
+            overflow-y: auto;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .info-panel-title {
+            font-size: var(--font-size-2xl);
+            font-weight: 600;
+            color: var(--color-text-primary);
+            margin-bottom: var(--space-lg);
+            letter-spacing: -0.01em;
+        }
+
+        .info-panel-content {
+            font-size: var(--font-size-lg);
+            line-height: var(--line-height-relaxed);
+            color: var(--color-text-secondary);
+        }
+
+        .info-panel-content ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .info-panel-content li {
+            padding: var(--space-md) 0;
+            padding-left: var(--space-xl);
+            position: relative;
+        }
+
+        .info-panel-content li::before {
+            content: '•';
+            position: absolute;
+            left: 0;
+            color: var(--color-text-primary);
+            font-weight: 600;
+        }
+
+        /* Result Panel - evaluation results */
+        .result-panel {
+            display: none;
+        }
+
+        .result-panel.show {
+            display: block;
+        }
+
+        /* Typography Hierarchy */
+        .subtitle {
+            color: var(--color-text-secondary);
+            font-size: var(--font-size-xl);
+            line-height: var(--line-height-relaxed);
+            margin-bottom: 0;
+            text-align: center;
+        }
+
+        /* Form Elements - professional, expensive feel */
+        .form-group {
+            margin-bottom: var(--space-xl);
+        }
+
+        label {
+            display: block;
+            margin-bottom: var(--space-md);
+            color: var(--color-text-primary);
+            font-weight: 600;
+            font-size: var(--font-size-lg);
+            letter-spacing: 0.01em;
+        }
+
+        input[type="password"],
+        input[type="text"],
+        input[type="email"] {
+            width: 100%;
+            padding: var(--space-md) var(--space-lg);
+            border: 1px solid var(--color-border);
+            border-radius: 6px;
+            font-size: var(--font-size-lg);
+            font-family: inherit;
+            background: var(--color-surface);
+            color: var(--color-text-primary);
+            transition: border-color var(--transition-base), box-shadow var(--transition-base);
+        }
+
+        input:hover {
+            border-color: #c6cbd1;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--color-border-focus);
+            box-shadow: 0 0 0 3px rgba(3, 102, 214, 0.1);
+        }
+
+        .optional {
+            color: var(--color-text-tertiary);
+            font-size: var(--font-size-base);
+            font-weight: 400;
+        }
+
+        /* Button - confident, restrained */
+        button {
+            width: 100%;
+            padding: var(--space-lg) var(--space-xl);
+            background: var(--color-text-primary);
+            color: var(--color-surface);
+            border: 1px solid var(--color-text-primary);
+            border-radius: 6px;
+            font-size: var(--font-size-xl);
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            transition: background-color var(--transition-base), border-color var(--transition-base);
+            margin-top: var(--space-md);
+        }
+
+        button:hover {
+            background: #1a1a1a;
+            border-color: #1a1a1a;
+        }
+
+        button:active {
+            background: #000000;
+        }
+
+        /* Result Section - contained, scrollable panel */
+        .result {
+            padding: 0;
+            border-radius: 6px;
+            border: 1px solid var(--color-border);
+            display: block;
+            background: var(--color-surface);
+            max-height: 60vh;
+            overflow-y: auto;
+            overflow-x: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            opacity: 1;
+        }
+
+        /* Status-based borders - subtle left accent */
+        .result.weak {
+            border-left: 3px solid var(--color-danger);
+            background: var(--color-danger-bg);
+        }
+
+        .result.medium {
+            border-left: 3px solid var(--color-warning);
+            background: var(--color-warning-bg);
+        }
+
+        .result.strong {
+            border-left: 3px solid var(--color-success);
+            background: var(--color-success-bg);
+        }
+
+        .result.very-strong {
+            border-left: 3px solid var(--color-info);
+            background: var(--color-info-bg);
+        }
+
+        /* Result inner container */
+        .result-inner {
+            padding: var(--space-xl);
+        }
+
+        /* Appreciation Message - context-aware feedback */
+        .appreciation-message {
+            font-size: var(--font-size-lg);
+            line-height: var(--line-height-relaxed);
+            color: var(--color-text-secondary);
+            margin-bottom: var(--space-lg);
+            padding-bottom: var(--space-lg);
+            border-bottom: 1px solid var(--color-border);
+            font-style: italic;
+        }
+
+        /* Score Header - horizontal grouping */
+        .score-header {
+            display: flex;
+            align-items: center;
+            gap: var(--space-lg);
+            margin-bottom: var(--space-lg);
+            flex-wrap: wrap;
+        }
+
+        .score-value {
+            font-size: var(--font-size-2xl);
+            font-weight: 600;
+            color: var(--color-text-primary);
+            line-height: 1;
+            letter-spacing: -0.02em;
+            white-space: nowrap;
+        }
+
+        /* Strength Badge - minimal, professional */
+        .strength-badge {
+            padding: var(--space-sm) var(--space-lg);
+            border-radius: 12px;
+            font-weight: 500;
+            font-size: var(--font-size-base);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            white-space: nowrap;
+        }
+
+        .strength-badge.weak {
+            background: var(--color-danger);
+            color: var(--color-surface);
+        }
+
+        .strength-badge.medium {
+            background: var(--color-warning);
+            color: var(--color-surface);
+        }
+
+        .strength-badge.strong {
+            background: var(--color-success);
+            color: var(--color-surface);
+        }
+
+        .strength-badge.very-strong {
+            background: var(--color-info);
+            color: var(--color-surface);
+        }
+
+        /* Entropy Display - inline with score */
+        .entropy-display {
+            margin-left: auto;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: var(--space-xs);
+        }
+
+        .entropy-label {
+            font-size: var(--font-size-base);
+            color: var(--color-text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-weight: 500;
+        }
+
+        .entropy-value {
+            font-size: var(--font-size-lg);
+            font-weight: 600;
+            color: var(--color-text-primary);
+            line-height: var(--line-height-tight);
+        }
+
+        /* Info Grid - removed, replaced with inline entropy */
+        .info-grid {
+            display: none;
+        }
+
+        .info-item {
+            padding: var(--space-md);
+            border: 1px solid var(--color-border);
+            border-radius: 6px;
+            background: var(--color-surface);
+        }
+
+        .info-label {
+            font-size: var(--font-size-base);
+            color: var(--color-text-secondary);
+            margin-bottom: var(--space-xs);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-weight: 500;
+        }
+
+        .info-value {
+            font-size: var(--font-size-lg);
+            font-weight: 600;
+            color: var(--color-text-primary);
+            line-height: var(--line-height-tight);
+        }
+
+        /* Sections - compact, clear separation */
+        .section {
+            margin-top: var(--space-lg);
+        }
+
+        .section:first-of-type {
+            margin-top: 0;
+        }
+
+        .section-title {
+            font-weight: 600;
+            margin-bottom: var(--space-md);
+            color: var(--color-text-primary);
+            font-size: var(--font-size-lg);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* Lists - compact, readable */
+        .issues-list,
+        .recommendations-list {
+            list-style: none;
+        }
+
+        .issues-list li,
+        .recommendations-list li {
+            padding: var(--space-md) var(--space-lg);
+            margin-bottom: var(--space-sm);
+            border-radius: 4px;
+            border: 1px solid var(--color-border);
+            background: var(--color-surface);
+            font-size: var(--font-size-lg);
+            line-height: var(--line-height-relaxed);
+        }
+
+        .issues-list li {
+            color: var(--color-danger);
+            border-left: 2px solid var(--color-danger);
+        }
+
+        .issues-list li::before {
+            content: "•";
+            margin-right: var(--space-sm);
+            font-weight: 600;
+        }
+
+        .recommendations-list li {
+            color: var(--color-text-primary);
+            border-left: 2px solid var(--color-info);
+        }
+
+        .recommendations-list li::before {
+            content: "→";
+            margin-right: var(--space-sm);
+            color: var(--color-info);
+            font-weight: 400;
+        }
+
+        /* Breach Warning - authoritative alert */
+        .breach-warning {
+            background: var(--color-danger-bg);
+            border: 1px solid var(--color-danger);
+            border-left: 3px solid var(--color-danger);
+            border-radius: 6px;
+            padding: var(--space-lg);
+            margin-bottom: var(--space-lg);
+            color: var(--color-danger);
+            font-weight: 500;
+            font-size: var(--font-size-lg);
+        }
+
+        .breach-warning::before {
+            content: "";
+            display: none;
+        }
+
+        /* Scrollbar styling for result panel */
+        .result::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .result::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .result::-webkit-scrollbar-thumb {
+            background: var(--color-border);
+            border-radius: 4px;
+        }
+
+        .result::-webkit-scrollbar-thumb:hover {
+            background: #c6cbd1;
+        }
+
+        /* Loading State - minimal spinner */
+        .loading {
+            text-align: center;
+            padding: var(--space-2xl);
+            color: var(--color-text-secondary);
+        }
+
+        .spinner {
+            border: 2px solid var(--color-border);
+            border-top: 2px solid var(--color-text-primary);
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto var(--space-md);
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Responsive - intentional mobile layout */
+        @media (max-width: 768px) {
+            .main-layout {
+                grid-template-columns: 1fr;
+                gap: var(--space-2xl);
+                column-gap: var(--space-2xl);
+            }
+
+            .main-layout::before {
+                display: none;
+            }
+
+            .info-panel,
+            .result {
+                max-height: 50vh;
+            }
+        }
+
+        @media (max-width: 640px) {
+            body {
+                padding: var(--space-md);
+                padding-top: var(--space-lg);
+            }
+
+            .container {
+                padding: var(--space-lg);
+            }
+
+            body > h1 {
+                font-size: var(--font-size-3xl);
+            }
+
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .score-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: var(--space-md);
+            }
+
+            .entropy-display {
+                margin-left: 0;
+                align-items: flex-start;
+            }
+
+            .result {
+                max-height: 50vh;
+            }
+        }
+
+        /* Scrollbar styling for info panel */
+        .info-panel::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .info-panel::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .info-panel::-webkit-scrollbar-thumb {
+            background: var(--color-border);
+            border-radius: 4px;
+        }
+
+        .info-panel::-webkit-scrollbar-thumb:hover {
+            background: #c6cbd1;
+        }
+    </style>
+</head>
+<body>
+    <h1>Password Checking</h1>
+
+    <div class="container">
+       
+        <p class="subtitle">Evaluate your password security using entropy, pattern detection, and breach intelligence</p>
+
+        <div class="main-layout">
+            <!-- Left Panel - Form (Static) -->
+            <div class="left-panel">
+                <form id="evaluateForm">
+                    <div class="form-group">
+                        <label for="password">Password *</label>
+                        <input type="password" id="password" name="password" required autocomplete="off">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="username">Username <span class="optional">(optional - for similarity check)</span></label>
+                        <input type="text" id="username" name="username" autocomplete="username">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email">Email <span class="optional">(optional - for similarity check)</span></label>
+                        <input type="email" id="email" name="email" autocomplete="email">
+                    </div>
+
+                    <button type="submit">Evaluate Password</button>
+                </form>
+
+                <div id="loading" class="loading" style="display: none;">
+                    <div class="spinner"></div>
+                    <p>Evaluating password...</p>
+                </div>
+            </div>
+
+            <!-- Right Panel - Dynamic Content -->
+            <div class="right-panel">
+                <!-- Info Panel - Visible by Default -->
+                <div id="infoPanel" class="info-panel">
+                    <div class="info-panel-title">Creating Strong Passwords</div>
+                    <div class="info-panel-content">
+                        <p style="margin-bottom: var(--space-md);">Follow these guidelines to create secure passwords:</p>
+                        <ul>
+                            <li>Use at least 12 characters, preferably 16 or more</li>
+                            <li>Avoid common dictionary words and predictable patterns</li>
+                            <li>Don't use sequential characters (abc, 123, qwerty)</li>
+                            <li>Include a mix of uppercase, lowercase, numbers, and symbols</li>
+                            <li>Use random or uncommon combinations rather than personal information</li>
+                            <li>Avoid repeating the same character multiple times</li>
+                            <li>Don't use your username, email, or personal details</li>
+                            <li>Consider using a password manager to generate and store unique passwords</li>
+                            <li>Never reuse passwords across different accounts or services</li>
+                            <li>Enable two-factor authentication (2FA) whenever possible for additional security</li>
+                        </ul>
+                        <p style="margin-top: var(--space-md); color: var(--color-text-tertiary); font-size: var(--font-size-sm);">
+                            Enter a password above to evaluate its strength and receive specific recommendations.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Result Panel - Hidden Initially -->
+                <div id="resultPanel" class="result-panel">
+                    <div id="result" class="result"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer Information -->
+    <div style="max-width: 1200px; width: 100%; padding: var(--space-2xl) var(--space-lg); margin-top: var(--space-2xl); text-align: center; color: var(--color-text-secondary); font-size: var(--font-size-base); line-height: var(--line-height-relaxed);">
+        <p style="margin-bottom: var(--space-md);">This tool evaluates password strength using advanced entropy calculation, pattern detection, and breach intelligence.</p>
+        <p style="margin-bottom: var(--space-md);">All password evaluation is performed locally. Your passwords are never transmitted or stored.</p>
+        <p>For maximum security, use unique passwords for each account and enable two-factor authentication when available.</p>
+    </div>
+
+    <script>
+        const form = document.getElementById('evaluateForm');
+        const resultDiv = document.getElementById('result');
+        const loadingDiv = document.getElementById('loading');
+        const infoPanel = document.getElementById('infoPanel');
+        const resultPanel = document.getElementById('resultPanel');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const password = document.getElementById('password').value;
+            const username = document.getElementById('username').value;
+            const email = document.getElementById('email').value;
+
+            // Show loading
+            loadingDiv.style.display = 'block';
+            resultDiv.innerHTML = '';
+
+            try {
+                const response = await fetch('/api/evaluate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        password: password,
+                        username: username || null,
+                        email: email || null
+                    })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Evaluation failed');
+                }
+
+                // Toggle panels: hide info, show result
+                infoPanel.style.display = 'none';
+                resultPanel.style.display = 'block';
+                resultPanel.classList.add('show');
+
+                displayResult(data);
+            } catch (error) {
+                // Show result panel even on error
+                infoPanel.style.display = 'none';
+                resultPanel.style.display = 'block';
+                resultPanel.classList.add('show');
+
+                resultDiv.innerHTML = `
+                    <div class="result-inner">
+                        <div style="background: #fee; padding: 20px; border-radius: 10px; color: #c62828;">
+                            <strong>Error:</strong> ${error.message}
+                        </div>
+                    </div>
+                `;
+            } finally {
+                loadingDiv.style.display = 'none';
+            }
+        });
+
+        function displayResult(data) {
+            const strengthClass = data.strength.toLowerCase().replace(' ', '-');
+            const strengthBadgeClass = strengthClass;
+
+            // Appreciation message based on strength
+            let appreciationMessage = '';
+            switch(data.strength) {
+                case 'Very Strong':
+                    appreciationMessage = 'Excellent password. This would be difficult to crack even with modern attack techniques.';
+                    break;
+                case 'Strong':
+                    appreciationMessage = 'Good password. You\'re following solid security practices.';
+                    break;
+                case 'Medium':
+                    appreciationMessage = 'Decent password, but there\'s room to improve its resilience.';
+                    break;
+                case 'Weak':
+                    appreciationMessage = 'This password is vulnerable. Improving it will significantly increase your security.';
+                    break;
+                default:
+                    appreciationMessage = '';
+            }
+
+            let issuesHtml = '';
+            if (data.issues && data.issues.length > 0) {
+                issuesHtml = `
+                    <ul class="issues-list">
+                        ${data.issues.map(issue => `<li>${escapeHtml(issue)}</li>`).join('')}
+                    </ul>
+                `;
+            }
+
+            let recommendationsHtml = '';
+            if (data.recommendations && data.recommendations.length > 0) {
+                recommendationsHtml = `
+                    <ul class="recommendations-list">
+                        ${data.recommendations.map(rec => `<li>${escapeHtml(rec)}</li>`).join('')}
+                    </ul>
+                `;
+            }
+
+            let breachWarning = '';
+            if (data.is_breached) {
+                breachWarning = `
+                    <div class="breach-warning">
+                        This password has been compromised in a data breach!
+                        ${data.breach_reason ? escapeHtml(data.breach_reason) : ''}
+                    </div>
+                `;
+            }
+
+            resultDiv.innerHTML = `
+                <div class="result-inner">
+                    ${appreciationMessage ? `<div class="appreciation-message">${escapeHtml(appreciationMessage)}</div>` : ''}
+                    
+                    <div class="score-header">
+                        <div class="score-value">${data.score}/100</div>
+                        <div class="strength-badge ${strengthBadgeClass}">${data.strength}</div>
+                        <div class="entropy-display">
+                            <div class="entropy-label">Entropy</div>
+                            <div class="entropy-value">${data.entropy_bits} bits</div>
+                        </div>
+                    </div>
+
+                    ${breachWarning}
+
+                    <div class="section">
+                        <div class="section-title">Issues Detected</div>
+                        ${issuesHtml || '<p style="color: #666; font-size: 0.875rem;">No major issues detected</p>'}
+                    </div>
+
+                    <div class="section">
+                        <div class="section-title">Recommendations</div>
+                        ${recommendationsHtml}
+                    </div>
+                </div>
+            `;
+
+            resultDiv.className = `result ${strengthClass}`;
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html>
+

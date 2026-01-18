@@ -1,0 +1,14 @@
+# Core dependencies for password strength evaluation system
+# No external dependencies required for basic functionality
+
+# Web server dependencies
+flask>=2.3.0
+flask-cors>=4.0.0
+
+# Optional: For Have I Been Pwned API integration
+# Uncomment the line below if you want to enable HIBP API checks
+# requests>=2.31.0
+
+# Testing dependencies (optional, for running tests)
+# unittest is part of Python standard library
+
